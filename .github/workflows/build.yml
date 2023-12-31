@@ -5,6 +5,9 @@ on:
   pull_request:
   create:
 
+env:
+  ANGLE_BUILDER_OUTPUT_FOLDER: ./angle-builder-output
+
 jobs:
   build:
     runs-on: macos-latest
@@ -20,16 +23,16 @@ jobs:
         run: pip install .
 
       - name: Build artifacts for macos-x64
-        run: angle-builder macos-x64 --artifact-output-folder /angle-builder-output
+        run: angle-builder macos-x64 --artifact-output-folder $ANGLE_BUILDER_OUTPUT_FOLDER
 
       - name: Build artifacts for macos-arm64
-        run: angle-builder macos-arm64 --artifact-output-folder /angle-builder-output
+        run: angle-builder macos-arm64 --artifact-output-folder $ANGLE_BUILDER_OUTPUT_FOLDER
 
       - name: Build artifacts for macos-universal
-        run: angle-builder macos-universal --artifact-output-folder /angle-builder-output
+        run: angle-builder macos-universal --artifact-output-folder $ANGLE_BUILDER_OUTPUT_FOLDER
 
       - name: Store artifacts
         uses: actions/upload-artifact@v4
         with:
           name: macos-angle-artifacts
-          path: --artifact-output-folder /angle-builder-output
+          path: ${{ env.ANGLE_BUILDER_OUTPUT_FOLDER }}
