@@ -1,0 +1,35 @@
+name: Build artifacts
+
+on:
+  push:
+  pull_request:
+  create:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout angle-builder
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+
+      - name: Install angle-builder
+        run: pip install .
+
+      - name: Build artifacts for macos-x64
+        run: angle-builder macos-x64 --artifact-output-folder /angle-builder-output
+
+      - name: Build artifacts for macos-arm64
+        run: angle-builder macos-arm64 --artifact-output-folder /angle-builder-output
+
+      - name: Build artifacts for macos-universal
+        run: angle-builder macos-universal --artifact-output-folder /angle-builder-output
+
+      - name: Store artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-angle-artifacts
+          path: --artifact-output-folder /angle-builder-output
