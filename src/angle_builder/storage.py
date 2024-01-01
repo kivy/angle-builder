@@ -15,17 +15,20 @@ class StorageFolderManager:
                 created in the user's home directory.
             logger_level (int): Logging level.
         """
-        self.storage_folder_name = ".angle-builder"
+        self.user_path = user_path
 
         self._logger = logging.getLogger(__name__)
         self._logger.setLevel(logger_level)
 
-        if user_path is None:
-            self.folder_path = os.path.join(
-                os.path.expanduser("~"), self.storage_folder_name
-            )
+    @property
+    def folder_path(self) -> os.PathLike:
+        """
+        Returns the path to our storage folder.
+        """
+        if self.user_path:
+            return self.user_path
         else:
-            self.folder_path = os.path.join(user_path, self.storage_folder_name)
+            return os.path.join(os.path.expanduser("~"), ".angle-builder")
 
     def ensure_folder(self) -> None:
         """
@@ -34,16 +37,10 @@ class StorageFolderManager:
         """
         if not os.path.exists(self.folder_path):
             os.makedirs(self.folder_path)
-            self._logger.info(
-                "Build folder '%s' created at '%s'",
-                self.storage_folder_name,
-                self.folder_path,
-            )
+            self._logger.info("Created build folder at '%s'", self.folder_path)
         else:
             self._logger.info(
-                "Build folder '%s' already exists at '%s'",
-                self.storage_folder_name,
-                self.folder_path,
+                "Build folder already exists at '%s'", self.folder_path
             )
 
     def delete_folder(self) -> None:
@@ -52,14 +49,8 @@ class StorageFolderManager:
         """
         if os.path.exists(self.folder_path):
             os.rmdir(self.folder_path)
-            self._logger.info(
-                "Build folder '%s' deleted from '%s'",
-                self.storage_folder_name,
-                self.folder_path,
-            )
+            self._logger.info("Deleted build folder at '%s'", self.folder_path)
         else:
             self._logger.info(
-                "Build folder '%s' does not exist at '%s'",
-                self.storage_folder_name,
-                self.folder_path,
+                "Build folder does not exist at '%s'", self.folder_path
             )

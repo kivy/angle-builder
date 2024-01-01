@@ -12,6 +12,8 @@ __author__ = "Kivy Team and other contributors"
 __copyright__ = "Kivy Team and other contributors"
 __license__ = "MIT"
 
+logging.basicConfig(level=logging.NOTSET)
+
 
 def parse_args(args):
     """Parse command line parameters

@@ -1,0 +1,27 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout angle-builder
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+
+      - name: Install angle-builder
+        run: pip install ".[dev]"
+
+      - name: Run PEP8 check
+        run: |
+          pip install flake8
+          flake8 src tests
+
+      - name: Run tests
+        run: python -m pytest tests

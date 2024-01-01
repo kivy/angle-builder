@@ -39,8 +39,7 @@ class ANGLE:
 
     def _clone_angle(self):
         """
-        Clone ANGLE repository into our storage folder.
-        (in a cross-platform way, without using sh.git, as it is not available on Windows)
+        Clone ANGLE repository into the storage folder.
         """
 
         subprocess.run(
@@ -312,16 +311,22 @@ class ANGLE:
 
     def build(self, output_artifact_mode: str, output_folder: str) -> None:
         """
-        Build ANGLE with the specified output output_artifact_mode.
+        Build ANGLE for the specified output_artifact_mode.
 
-        The output_artifact_mode can be one of:
-        - macos-arm64 (produces a zip with arm64 dylibs, include folder and LICENSE)
-        - macos-x64 (produces a zip with x64 dylibs, include folder and LICENSE)
-        - macos-universal (produces a zip with fat dylibs, include folder and LICENSE)
-        - iphoneos-arm64 (produces a zip with iphoneos-arm64 .Framework, include folder and LICENSE)
-        - iphonesimulator-x64 (produces a zip with iphonesimulator-x64 .Framework, include folder and LICENSE)
-        - iphonesimulator-arm64 (produces a zip with iphonesimulator-arm64 .Framework, include folder and LICENSE)
-        - iphone*-universal (produces a zip with a .xcframework that contains iphoneos-arm64, iphonesimulator-x64 and iphonesimulator-arm64 .Frameworks, include folder and LICENSE)
+        The output_artifact_mode could be one of:
+        - macos-x64
+        - macos-arm64
+        - macos-universal
+        - iphoneos-arm64
+        - iphonesimulator-x64
+        - iphonesimulator-arm64
+        - iphone*-universal
+
+        The produced artifact is a zip file containing:
+        - libEGL
+        - libGLESv2
+        - include folder
+        - LICENSE
         """
         self.clone_and_checkout()
         self.bootstrap()
