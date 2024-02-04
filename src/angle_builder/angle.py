@@ -150,7 +150,7 @@ class ANGLE:
 
         if output_artifact_mode in (
             "iphoneos-arm64",
-            "iphone*-universal",
+            "iphoneall-universal",
         ):
             builds.append(
                 {
@@ -166,7 +166,7 @@ class ANGLE:
 
         if output_artifact_mode in (
             "iphonesimulator-x64",
-            "iphone*-universal",
+            "iphoneall-universal",
         ):
             builds.append(
                 {
@@ -175,6 +175,7 @@ class ANGLE:
                     + [
                         'target_cpu="x64"',
                         'target_os="ios"',
+                        'target_environment="simulator"',
                         "ios_enable_code_signing=false",
                     ],
                 }
@@ -182,7 +183,7 @@ class ANGLE:
 
         if output_artifact_mode in (
             "iphonesimulator-arm64",
-            "iphone*-universal",
+            "iphoneall-universal",
         ):
             builds.append(
                 {
@@ -191,6 +192,7 @@ class ANGLE:
                     + [
                         'target_cpu="arm64"',
                         'target_os="ios"',
+                        'target_environment="simulator"',
                         "ios_enable_code_signing=false",
                     ],
                 }
@@ -330,6 +332,222 @@ class ANGLE:
 
         return [libEGL_dylib_path, libGLESv2_dylib_path]
 
+    def _create_iphoneos_frameworks(self, output_artifact_mode: str) -> list:
+
+        output_extension = (
+            "xcframework"
+            if output_artifact_mode == "iphoneall-universal"
+            else "framework"
+        )
+
+        libEGL_output_path = os.path.join(
+            self.angle_path,
+            "out",
+            output_artifact_mode,
+            f"libEGL.{output_extension}",
+        )
+        libGLESv2_output_path = os.path.join(
+            self.angle_path,
+            "out",
+            output_artifact_mode,
+            f"libGLESv2.{output_extension}",
+        )
+
+        self._logger.info(
+            "Creating iphoneos frameworks for branch %s and build target %s",
+            self.branch,
+            output_artifact_mode,
+        )
+
+        if output_artifact_mode == "iphoneall-universal":
+
+            # Ensure the fake all-universal folder exists
+            # and is empty
+            iphone_universal_folder = os.path.join(
+                self.angle_path, "out", "iphoneos-arm64", "iphoneall-universal"
+            )
+            shutil.rmtree(iphone_universal_folder, ignore_errors=True)
+            os.makedirs(iphone_universal_folder)
+
+            # Ensure the fake iphonesimulator-universal folder exists,
+            # and is empty
+            iphonesimulator_universal_folder = os.path.join(
+                self.angle_path, "out", "iphonesimulator-universal"
+            )
+            shutil.rmtree(iphonesimulator_universal_folder, ignore_errors=True)
+            os.makedirs(iphonesimulator_universal_folder)
+
+            self._logger.info(
+                "Lipo-ing iphonesimulator frameworks for branch %s and build target %s",
+                self.branch,
+                output_artifact_mode,
+            )
+
+            # Copy iphonesimulator-x64 frameworks to iphonesimulator-universal
+            # (But do not keep the binary files)
+            shutil.copytree(
+                os.path.join(
+                    self.angle_path,
+                    "out",
+                    "iphonesimulator-x64",
+                    "libEGL.framework",
+                ),
+                os.path.join(
+                    self.angle_path,
+                    "out",
+                    "iphonesimulator-universal",
+                    "libEGL.framework",
+                ),
+            )
+            os.remove(
+                os.path.join(
+                    self.angle_path,
+                    "out",
+                    "iphonesimulator-universal",
+                    "libEGL.framework",
+                    "libEGL",
+                )
+            )
+            shutil.copytree(
+                os.path.join(
+                    self.angle_path,
+                    "out",
+                    "iphonesimulator-x64",
+                    "libGLESv2.framework",
+                ),
+                os.path.join(
+                    self.angle_path,
+                    "out",
+                    "iphonesimulator-universal",
+                    "libGLESv2.framework",
+                ),
+            )
+            os.remove(
+                os.path.join(
+                    self.angle_path,
+                    "out",
+                    "iphonesimulator-universal",
+                    "libGLESv2.framework",
+                    "libGLESv2",
+                )
+            )
+            # Lipo-ize iphonesimulator frameworks into fat frameworks
+            subprocess.run(
+                [
+                    "lipo",
+                    "-create",
+                    os.path.join(
+                        self.angle_path,
+                        "out",
+                        "iphonesimulator-x64",
+                        "libEGL.framework",
+                        "libEGL",
+                    ),
+                    os.path.join(
+                        self.angle_path,
+                        "out",
+                        "iphonesimulator-arm64",
+                        "libEGL.framework",
+                        "libEGL",
+                    ),
+                    "-output",
+                    os.path.join(
+                        self.angle_path,
+                        "out",
+                        "iphonesimulator-universal",
+                        "libEGL.framework",
+                        "libEGL",
+                    ),
+                ],
+                cwd=self.angle_path,
+                check=True,
+            )
+
+            subprocess.run(
+                [
+                    "lipo",
+                    "-create",
+                    os.path.join(
+                        self.angle_path,
+                        "out",
+                        "iphonesimulator-x64",
+                        "libGLESv2.framework",
+                        "libGLESv2",
+                    ),
+                    os.path.join(
+                        self.angle_path,
+                        "out",
+                        "iphonesimulator-arm64",
+                        "libGLESv2.framework",
+                        "libGLESv2",
+                    ),
+                    "-output",
+                    os.path.join(
+                        self.angle_path,
+                        "out",
+                        "iphonesimulator-universal",
+                        "libGLESv2.framework",
+                        "libGLESv2",
+                    ),
+                ],
+                cwd=self.angle_path,
+                check=True,
+            )
+
+            # Create an xcframework for libEGL
+            subprocess.run(
+                [
+                    "xcodebuild",
+                    "-create-xcframework",
+                    "-framework",
+                    os.path.join(
+                        self.angle_path,
+                        "out",
+                        "iphoneos-arm64",
+                        "libEGL.framework",
+                    ),
+                    "-framework",
+                    os.path.join(
+                        self.angle_path,
+                        "out",
+                        "iphonesimulator-universal",
+                        "libEGL.framework",
+                    ),
+                    "-output",
+                    libEGL_output_path,
+                ],
+                cwd=self.angle_path,
+                check=True,
+            )
+
+            # Create an xcframework for libGLESv2
+            subprocess.run(
+                [
+                    "xcodebuild",
+                    "-create-xcframework",
+                    "-framework",
+                    os.path.join(
+                        self.angle_path,
+                        "out",
+                        "iphoneos-arm64",
+                        "libGLESv2.framework",
+                    ),
+                    "-framework",
+                    os.path.join(
+                        self.angle_path,
+                        "out",
+                        "iphonesimulator-universal",
+                        "libGLESv2.framework",
+                    ),
+                    "-output",
+                    libGLESv2_output_path,
+                ],
+                cwd=self.angle_path,
+                check=True,
+            )
+
+        return [libEGL_output_path, libGLESv2_output_path]
+
     def build(self, output_artifact_mode: str, output_folder: str) -> None:
         """
         Build ANGLE for the specified output_artifact_mode.
@@ -341,7 +559,7 @@ class ANGLE:
         - iphoneos-arm64
         - iphonesimulator-x64
         - iphonesimulator-arm64
-        - iphone*-universal
+        - iphoneall-universal
 
         The produced artifact is a zip file containing:
         - libEGL
@@ -366,6 +584,8 @@ class ANGLE:
 
         if output_artifact_mode.startswith("macos"):
             libs = self._create_macos_dylibs(output_artifact_mode)
+        elif output_artifact_mode.startswith("iphone"):
+            libs = self._create_iphoneos_frameworks(output_artifact_mode)
 
         with tempfile.TemporaryDirectory() as temp_dir:
             self._logger.info(
@@ -375,7 +595,12 @@ class ANGLE:
             )
             # Copy libs, include folder and LICENSE to temp_dir
             for lib in libs:
-                shutil.copy(lib, temp_dir)
+                if os.path.isdir(lib):
+                    shutil.copytree(
+                        lib, os.path.join(temp_dir, os.path.basename(lib))
+                    )
+                else:
+                    shutil.copy(lib, temp_dir)
 
             shutil.copytree(
                 include_folder_path, os.path.join(temp_dir, "include")
