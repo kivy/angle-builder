@@ -307,6 +307,27 @@ class ANGLE:
                 check=True,
             )
 
+            # By using install_name_tool, we can change the dylib's id to @rpath/*.dylib
+            subprocess.run(
+                [
+                    "install_name_tool",
+                    "-id",
+                    "@rpath/libEGL.dylib",
+                    libEGL_dylib_path,
+                ],
+                check=True,
+            )
+
+            subprocess.run(
+                [
+                    "install_name_tool",
+                    "-id",
+                    "@rpath/libGLESv2.dylib",
+                    libGLESv2_dylib_path,
+                ],
+                check=True,
+            )
+
         return [libEGL_dylib_path, libGLESv2_dylib_path]
 
     def build(self, output_artifact_mode: str, output_folder: str) -> None:
