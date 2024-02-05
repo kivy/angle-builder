@@ -66,7 +66,7 @@ def test_generate_build_targets_ios_universal(angle):
     assert len(arm64_iphonesimulator) == 1
     assert len(arm64_iphoneos) == 1
 
-    universal_all_iphone = angle._generate_build_targets("iphone*-universal")
+    universal_all_iphone = angle._generate_build_targets("iphoneall-universal")
 
     assert len(universal_all_iphone) == 3
     assert x64_iphonesimulator[0] in universal_all_iphone
