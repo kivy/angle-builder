@@ -561,7 +561,7 @@ class ANGLE:
         - iphonesimulator-arm64
         - iphoneall-universal
 
-        The produced artifact is a zip file containing:
+        The produced artifact is a .tar.gz archive containing:
         - libEGL
         - libGLESv2
         - include folder
@@ -589,7 +589,7 @@ class ANGLE:
 
         with tempfile.TemporaryDirectory() as temp_dir:
             self._logger.info(
-                "Creating zip for branch %s and output_artifact_mode %s",
+                "Creating archive for branch %s and output_artifact_mode %s",
                 self.branch,
                 output_artifact_mode,
             )
@@ -607,13 +607,10 @@ class ANGLE:
             )
             shutil.copy(license_path, temp_dir)
 
-            # Create a zip file with libs, include folder and LICENSE
+            # Create a .tar.gz archive with libs, include folder and LICENSE
             shutil.make_archive(
-                os.path.join(
-                    output_folder,
-                    f"angle-{self.underlined_branch}-{output_artifact_mode}",
-                ),
-                "zip",
+                os.path.join(output_folder, f"angle-{output_artifact_mode}"),
+                "gztar",
                 root_dir=temp_dir,
                 verbose=True,
             )
