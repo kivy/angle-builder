@@ -332,6 +332,25 @@ class ANGLE:
 
         return [libEGL_dylib_path, libGLESv2_dylib_path]
 
+    def _patch_frameworks_plist(self, framework_path: str) -> None:
+        # The Info.plist file is missing CFBundleShortVersionString which
+        # is required for the framework to be accepted by the App Store.
+        # We need to patch the Info.plist file to add the missing key.
+
+        self._logger.info("Patching Info.plist files for iphoneos frameworks")
+
+        subprocess.run(
+            [
+                "plutil",
+                "-replace",
+                "CFBundleShortVersionString",
+                "-string",
+                "1.0",
+                os.path.join(framework_path, "Info.plist"),
+            ],
+            check=True,
+        )
+
     def _create_iphoneos_frameworks(self, output_artifact_mode: str) -> list:
 
         output_extension = (
@@ -578,6 +597,23 @@ class ANGLE:
 
         for build_target in build_targets:
             self._autoninja_build(build_target)
+            if build_target["name"].startswith("iphone"):
+                self._patch_frameworks_plist(
+                    os.path.join(
+                        self.angle_path,
+                        "out",
+                        build_target["name"],
+                        "libEGL.framework",
+                    )
+                )
+                self._patch_frameworks_plist(
+                    os.path.join(
+                        self.angle_path,
+                        "out",
+                        build_target["name"],
+                        "libGLESv2.framework",
+                    )
+                )
 
         include_folder_path = os.path.join(self.angle_path, "include")
         license_path = os.path.join(self.angle_path, "LICENSE")
