@@ -56,7 +56,7 @@ def parse_args(args):
         "--branch",
         dest="branch",
         help="ANGLE branch to build",
-        default="chromium/6045",
+        default="chromium/6261",
     )
     parser.add_argument(
         "--storage-folder",
