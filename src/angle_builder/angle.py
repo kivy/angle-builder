@@ -122,6 +122,7 @@ class ANGLE:
         common_gn_args = [
             "is_component_build=false",
             "is_debug=false",
+            "angle_enable_wgpu=false",
         ]
 
         if output_artifact_mode in ("macos-arm64", "macos-universal"):
