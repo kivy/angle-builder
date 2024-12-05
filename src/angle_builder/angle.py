@@ -590,6 +590,7 @@ class ANGLE:
         self.clone_and_checkout()
         self.bootstrap()
         self.sync()
+        os.environ["MACOS_DEPLOYMENT_TARGET"] = "10.15"
 
         build_targets = self._generate_build_targets(output_artifact_mode)
 
