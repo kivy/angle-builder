@@ -123,6 +123,7 @@ class ANGLE:
             "is_component_build=false",
             "is_debug=false",
             "angle_enable_wgpu=false",
+            "mac_deployment_target=\"10.15\"",
         ]
 
         if output_artifact_mode in ("macos-arm64", "macos-universal"):
