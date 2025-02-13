@@ -161,6 +161,7 @@ class ANGLE:
                     + [
                         'target_cpu="arm64"',
                         'target_os="ios"',
+                        'target_environment="device"',
                         "ios_enable_code_signing=false",
                     ],
                 }
